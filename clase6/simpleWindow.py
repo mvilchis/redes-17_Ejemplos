@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import SIGNAL, QObject
 import sys
 from auxiliarWindow import AuxiliarWindow
 from myServer import MyApiServer
@@ -20,7 +21,9 @@ class SimpleWindow(QtGui.QWidget):
 def main():
     app = QtGui.QApplication(sys.argv)
     mainWindow = SimpleWindow()
-    apiServer = MyApiServer(mainWindow).server
+    api = MyApiServer(mainWindow)
+    apiServer = api.server
+    QObject.connect(api.funtionWrapper, SIGNAL('some_signal'),mainWindow.openNewWindow, QtCore.Qt.QueuedConnection)
     api_server_thread = Thread(target=apiServer.serve_forever)
     api_server_thread.start()
 
