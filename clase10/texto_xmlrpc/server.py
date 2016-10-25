@@ -11,12 +11,12 @@ IP = '127.0.0.1'
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 class Server:
-    def __init__(self, gui):
+    def __init__(self, signalManager):
         self.server = SimpleXMLRPCServer((IP, CHAT_PORT), requestHandler=RequestHandler, allow_none=True)
         # Agregamos las funciones al servidor xmlrpc
         self.server.register_introspection_functions()
         self.server.register_multicall_functions()
-        self.functionWrapper = FunctionWrapper(gui)
+        self.functionWrapper = FunctionWrapper(signalManager)
         self.server.register_instance(self.functionWrapper)
 
     def run(self):
@@ -27,11 +27,11 @@ class Server:
         self.server.server_close()
 
 class FunctionWrapper:
-    def __init__(self, chat_window):
-        self.chat_window = chat_window
+    def __init__(self, signalManager):
+        self.signalManager = signalManager
 
     """Funcion que ofrece el servidor esta funcion agregara a la interfaz
     grafica el texto que el cliente envie """
     def sendMessage_remote(self, message):
         text = message
-        self.chat_window.insert_text_window("Mandaron: " + text + "\n")
+        self.signalManager.add_message_signal("Mandaron: " + text + "\n")
