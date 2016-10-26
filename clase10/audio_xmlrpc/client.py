@@ -23,8 +23,12 @@ def callback(in_data, frame_count, time_info, flag):
     global proxy_server
     audio_data = np.fromstring(in_data, dtype=np.float32)
     #Aqui manda audio
-    binary_data = xmlrpclib.Binary(audio_data)
-    proxy_server.play_audio_remote(binary_data)
+    #Revisamos si podemos mandar audio
+    if proxy_server.can_play_audio():
+        binary_data = xmlrpclib.Binary(audio_data)
+        proxy_server.play_audio_remote(binary_data)
+    else:
+        sys.exit(0)
     #Termina de mandar audio
     return (audio_data, pyaudio.paContinue)
 
