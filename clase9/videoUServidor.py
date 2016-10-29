@@ -22,6 +22,7 @@ de reproduce el video
 
 import socket
 import cv2
+
 import numpy
 import pickle
 import struct
@@ -36,30 +37,23 @@ def main():
     global my_socket
     my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM,socket.IPPROTO_UDP)#socket.SOCK_STREAM)
     my_socket.bind((TCP_IP, TCP_PORT))
-    #my_socket.listen(10)
-    #conn, addr = my_socket.accept()
-    payload_size = struct.calcsize("L")
     data = ""
+    split = int(my_socket.recvfrom(BUFFER_SIZE)[0])
+    imstr = [""] * split
     while True:
-        #Recibimos el frame completo
-        while len(data) < payload_size:
-            #data += conn.recv(BUFFER_SIZE)
-            data+= my_socket.recvfrom(BUFFER_SIZE)[0]
-        packed_msg_size = data[:payload_size]
+        for i in range(split):
+            imstr[i], addr = my_socket.recvfrom(BUFFER_SIZE * 32)
+        jpgstring = "".join(imstr)
+        narray = numpy.fromstring(jpgstring, dtype="uint8")
+        decimg = cv2.imdecode(narray, 1)
 
-        data = data[payload_size:]
-        msg_size = struct.unpack("L", packed_msg_size)[0]
-
-        while len(data) < msg_size:
-            #data += conn.recv(BUFFER_SIZE)
-            data += my_socket.recvfrom(BUFFER_SIZE)[0]
-
-        frame_data = data[:msg_size]
-        data = data[msg_size:]
-
-        frame=pickle.loads(frame_data)
-        cv2.imshow('Servidor',frame)
-        cv2.waitKey(10)
+        try:
+            cv2.imshow("camara servidor", decimg)
+        except Exception as e:
+            print "show error"
+            continue
+        if  cv2.waitKey(10) == 27:
+            break
 
     cv2.destroyAllWindows()
 
